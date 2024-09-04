@@ -120,3 +120,118 @@ df['Item'] = df['Item'].astype('category')
 # Print the new DataFrame
 print('\nDataFrame after converting Item to category:')
 print(df, '\n')
+
+# Exercises my solutions:
+df = pd.read_csv("https://s3.amazonaws.com/coderbyteprojectattachments/reatcodeltd-axldp-o14h1x17-NapolivsAjax.csv")
+print(df, '\n')
+
+name = df.loc[df['ballRecovery'] == df['ballRecovery'].max()]["matchName"]
+print(name.item(), '\n')
+
+result = df.groupby('teamName')['successfulFinalThirdPasses'].mean()
+print(result, '\n')
+
+result = df.query("gameStarted == 0").groupby('teamName')['teamName'].count()
+print(result, '\n')
+
+result = df.groupby('teamName')['wonTackle'].sum()
+print(result, '\n')
+
+result = df.groupby(['teamName', 'position'])['ballRecovery'].mean()
+print(result, '\n')
+
+name2 = df[df['totalScoringAtt'] == df['totalScoringAtt'].max()]['matchName']
+print(name2.tolist()[0], '\n') # return the first one
+
+# Exercises recommended solutions:
+# Sort the dataframe by the ballRecovery column in descending order and get the first player's name
+top_player = df.sort_values(by = 'ballRecovery', ascending = False).iloc[0]
+print(top_player['matchName'], '\n')
+
+# Group by teamName and calculate the mean of successfulFinalThirdPasses for each group.
+# The result will be a pandas Series with team names as the index and the average values as the data.
+avg_final_third_passes = df.groupby('teamName')['successfulFinalThirdPasses'].mean()
+print(avg_final_third_passes, '\n')
+
+# Filter the dataframe for rows where gameStarted is 0 (substitutes)
+substitutes_df = df[df['gameStarted'] == 0]
+
+# Group by teamName and count the number of substitutes for each team
+count_substitutes = substitutes_df.groupby('teamName').size()
+print(count_substitutes, '\n')
+
+# Group by 'teamName' and sum the 'wonTackle' for each group
+total_tackles_by_team = df.groupby('teamName')['wonTackle'].sum()
+print(total_tackles_by_team, '\n')
+
+# Group by 'teamName' and 'position' and calculate the mean 'ballRecovery' for each group
+avg_ball_recovery_by_team_position = df.groupby(['teamName', 'position'])['ballRecovery'].mean()
+print(avg_ball_recovery_by_team_position, '\n')
+
+# Find the player with the maximum 'totalScoringAtt'
+top_scorer = df[df['totalScoringAtt'] == df['totalScoringAtt'].max()]['matchName'].iloc[0]
+print(top_scorer, '\n')
+
+# Exercises 2 My solutions:
+df2 = pd.read_csv('https://s3.amazonaws.com/coderbyteprojectattachments/reatcodeltd-axldp-lkxhr3hf-CelticsvsRbLeipzig.csv')
+print(df2, '\n')
+
+def best_passer(df, team_name):
+    names = df.query(f"teamName == '{team_name}'")
+    results = names[names['accuratePass'] == names['accuratePass'].max()]
+    return results['matchName'].item()
+
+print(best_passer(df2, 'Celtic'), '\n')
+
+def best_team_passes(df, team_name):
+    return df.query(f"teamName == '{team_name}'").groupby('teamName')['accuratePass'].sum().item()
+
+print(best_team_passes(df2, 'RB Leipzig'), '\n')
+
+def total_goals(df, team_name):
+    return df.query(f"teamName == '{team_name}'").groupby('teamName')['goals'].sum().item()
+
+print(total_goals(df2, 'RB Leipzig'), '\n')
+
+def best_performance(df):
+    results = df[df['touches'] == df['touches'].max()]
+    return results['matchName'].item()
+
+print(best_performance(df2), '\n')
+
+def most_active_team(df):
+    results = df[df['totalPass'] == df['totalPass'].max()]
+    return results['teamName'].item()
+
+print(most_active_team(df2), '\n')
+
+def top_defender(df):
+    results = df[df['interceptionWon'] == df['interceptionWon'].max()]
+    return results['matchName'].item()
+
+print(top_defender(df2), '\n')
+
+def goal_efficiency(df):
+    def calculate_ratio(goals, totalScoringAtt):
+        if totalScoringAtt == 0:
+            return goals
+        return goals / totalScoringAtt
+
+    df['Total Scoring Attempts'] = df.apply(lambda row: calculate_ratio(row['goals'], row['totalScoringAtt']), axis = 1)
+    results = df[df['Total Scoring Attempts'] == df['Total Scoring Attempts'].max()]
+    return results['teamName'].item()
+
+print(goal_efficiency(df2), '\n')
+
+def most_efficient_sub(df):
+    def calculate_ratio(successfulFinalThirdPasses, minsPlayed):
+        if minsPlayed == 0:
+            return 0
+        return successfulFinalThirdPasses / minsPlayed
+
+    df['Third Passes Ratio'] = df.apply(lambda row: calculate_ratio(row['successfulFinalThirdPasses'], row['minsPlayed']), axis = 1)
+    names = df.query("gameStarted == 0")
+    results = names[names['Third Passes Ratio'] == names['Third Passes Ratio'].max()]
+    return results['matchName'].item()
+
+print(most_efficient_sub(df2), '\n')
